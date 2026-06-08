@@ -9,22 +9,25 @@ Simulador de rover com linguagem de comandos própria — trabalho prático A3 d
 Um sistema web que permite escrever scripts em uma linguagem simples e ver o rover se mover em um grid 2D animado, passo a passo. O projeto implementa as três etapas clássicas de um compilador:
 
 1. **Análise léxica** (`lexer.py`) — tokeniza o script
-2. **Análise sintática** (`parser.py`) — valida a gramática
+2. **Análise sintática** (`parser.py`) — valida a gramática e expande blocos `REPEAT`
 3. **Interpretação** (`interpreter.py`) — executa os comandos sobre o rover e o grid
 
 ---
 
 ## Linguagem de Comandos
 
-| Comando  | Descrição                       | Exemplo  |
-|----------|---------------------------------|----------|
-| `MOVE n` | Avança n casas na direção atual | `MOVE 3` |
-| `BACK n` | Recua n casas                   | `BACK 2` |
-| `LEFT`   | Gira 90° à esquerda             | `LEFT`   |
-| `RIGHT`  | Gira 90° à direita              | `RIGHT`  |
-| `SCAN`   | Detecta obstáculo à frente      | `SCAN`   |
+| Comando              | Descrição                                         | Exemplo              |
+|----------------------|---------------------------------------------------|----------------------|
+| `MOVE n`             | Avança n casas na direção atual                   | `MOVE 3`             |
+| `BACK n`             | Recua n casas                                     | `BACK 2`             |
+| `LEFT`               | Gira 90° à esquerda                               | `LEFT`               |
+| `RIGHT`              | Gira 90° à direita                                | `RIGHT`              |
+| `SCAN`               | Detecta obstáculo à frente                        | `SCAN`               |
+| `IF OBSTACLE <cmd>`  | Executa `<cmd>` se há bloqueio à frente           | `IF OBSTACLE LEFT`   |
+| `REPEAT n { … }`     | Repete o bloco n vezes (suporta aninhamento)      | `REPEAT 4 { … }`     |
 
 Comentários com `#`, case-insensitive, linhas em branco ignoradas.
+Referência completa: [`commands/commands.md`](commands/commands.md)
 
 ---
 
@@ -33,18 +36,18 @@ Comentários com `#`, case-insensitive, linhas em branco ignoradas.
 ```
 Script do usuário
       ↓
-  lexer.py      → tokenização (análise léxica)
+  lexer.py        → tokenização (análise léxica)
       ↓
-  parser.py     → validação sintática
+  parser.py       → validação sintática + expansão de REPEAT
       ↓
-  interpreter.py → execução sobre rover + grid
+  interpreter.py  → execução sobre rover + grid
       ↓
   main.py (Flask) → API JSON
       ↓
   app.js + p5.js  → animação visual
 ```
 
-**Fluxo da API:**
+**Endpoints da API:**
 - `POST /run` — executa o script, retorna steps + log
 - `POST /validate` — valida a sintaxe sem executar
 
@@ -58,7 +61,7 @@ rover-espacial_A3/
 ├── requirements.txt
 ├── models/
 │   ├── lexer.py              ← tokenização
-│   ├── parser.py             ← validação sintática
+│   ├── parser.py             ← validação sintática + expansão de REPEAT
 │   ├── interpreter.py        ← execução dos comandos
 │   ├── rover.py              ← estado do rover (x, y, direção)
 │   └── grid.py               ← grade 2D + obstáculos
@@ -69,21 +72,21 @@ rover-espacial_A3/
 ├── commands/
 │   └── commands.md           ← spec formal da linguagem (GLC)
 └── docs/
-    ├── linguagem.md
-    ├── arquitetura.md
-    └── exemplos.md
+    ├── linguagem.md          ← resumo da linguagem
+    ├── arquitetura.md        ← arquitetura e formato da API
+    └── exemplos.md           ← exemplos de scripts
 ```
 
 ---
 
 ## Stack
 
-| Camada | Tecnologia |
-|--------|-----------|
-| Servidor | Flask 3.x · Python 3.10+ |
-| Visualização | p5.js 1.9 |
-| UI / Layout | Bootstrap 5.3 (local) |
-| Comunicação | Fetch API · JSON |
+| Camada       | Tecnologia               |
+|--------------|--------------------------|
+| Servidor     | Flask 3.x · Python 3.10+ |
+| Visualização | p5.js 1.9                |
+| UI / Layout  | Bootstrap 5.3 (local)    |
+| Comunicação  | Fetch API · JSON         |
 
 ---
 
@@ -113,10 +116,11 @@ python main.py
 
 ## Equipe
 
-| Responsabilidade | Arquivos principais |
-|-----------------|---------------------|
-| Backend — Compilador | `lexer.py`, `parser.py` |
-| Backend — Simulador | `rover.py`, `grid.py` |
-| Frontend — Simulador | `app.js`, `index.html` |
-| Frontend — Páginas | `docs.html`, `about.html` |
-| Integração + Docs | `main.py`, `interpreter.py` |
+| Nome              | RA         |
+|-------------------|------------|
+| Diogo Varela      | 172316253  |
+| Gabriel Fernandes | 172317728  |
+| João Brasil       | 172311360  |
+| Gabriel Klein     | 172312555  |
+| João Demech       | 172311321  |
+| Breno da Silva    | 172416094  |

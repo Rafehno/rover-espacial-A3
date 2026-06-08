@@ -376,7 +376,7 @@ async function runScript() {
 
 // ── Construção dos sub-passos ──────────────────────────────────────────────────
 
-// Expande MOVE/BACK em micro-passos de 1 célula para animação fluida
+// Expande MOVE/BACK (direto ou via IF OBSTACLE) em micro-passos de 1 célula para animação fluida
 function buildSubSteps(apiSteps, logLines) {
   const DELTAS = { N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0] };
   const result = [];
@@ -384,10 +384,15 @@ function buildSubSteps(apiSteps, logLines) {
   for (let i = 0; i < apiSteps.length; i++) {
     const step = apiSteps[i];
 
-    if ((step.command === 'MOVE' || step.command === 'BACK') && step.success) {
+    const directMove = (step.command === 'MOVE' || step.command === 'BACK');
+    const ifMove = step.command === 'IF_OBSTACLE' && step.if_fired &&
+                   (step.sub_command === 'MOVE' || step.sub_command === 'BACK');
+
+    if ((directMove || ifMove) && step.success) {
       const dir = step.before.dir;
       const [fdx, fdy] = DELTAS[dir] || [0, 0];
-      const [dx, dy] = step.command === 'MOVE' ? [fdx, fdy] : [-fdx, -fdy];
+      const isBack = step.command === 'BACK' || (ifMove && step.sub_command === 'BACK');
+      const [dx, dy] = isBack ? [-fdx, -fdy] : [fdx, fdy];
       const dist = Math.abs(step.after.x - step.before.x) + Math.abs(step.after.y - step.before.y);
 
       let cx = step.before.x;

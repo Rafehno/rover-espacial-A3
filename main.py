@@ -114,7 +114,7 @@ def validate():
     if data is None:
         return _err("Corpo da requisição deve ser JSON válido")
     tokens, lex_errors = tokenize(data.get("script", ""))
-    success, errors = parse(tokens, lex_errors)
+    success, errors, _ = parse(tokens, lex_errors)
     return jsonify({"success": success, "errors": errors})
 
 
@@ -133,7 +133,7 @@ def run():
         }), 400
 
     tokens, lex_errors = tokenize(clean["script"])
-    success, errors = parse(tokens, lex_errors)
+    success, errors, tokens = parse(tokens, lex_errors)
     if not success:
         return jsonify({
             "success": False, "errors": errors,
