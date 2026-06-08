@@ -30,16 +30,22 @@
     <!-- Gramática -->
     <div class="panel mb-4">
       <div class="section-title">Gramática Formal (GLC)</div>
-      <pre>programa  → comando+
-comando   → cmd_move | cmd_back | cmd_left | cmd_right | cmd_scan
+      <pre>programa    → comando+
+comando     → cmd_move | cmd_back | cmd_left | cmd_right | cmd_scan
+            | cmd_if | cmd_repeat
 
-cmd_move  → "MOVE" NUMERO
-cmd_back  → "BACK" NUMERO
-cmd_left  → "LEFT"
-cmd_right → "RIGHT"
-cmd_scan  → "SCAN"
+cmd_move    → "MOVE" NUMERO
+cmd_back    → "BACK" NUMERO
+cmd_left    → "LEFT"
+cmd_right   → "RIGHT"
+cmd_scan    → "SCAN"
 
-NUMERO    → [1-9][0-9]*</pre>
+cmd_if      → "IF" "OBSTACLE" subcmd
+subcmd      → cmd_move | cmd_back | cmd_left | cmd_right | cmd_scan
+
+cmd_repeat  → "REPEAT" NUMERO "{" comando+ "}"
+
+NUMERO      → [1-9][0-9]*</pre>
     </div>
 
     <!-- Tabela de comandos -->
@@ -85,6 +91,18 @@ NUMERO    → [1-9][0-9]*</pre>
             <td>Detecta obstáculo na célula à frente</td>
             <td><code>SCAN</code></td>
           </tr>
+          <tr>
+            <td>Condicional</td>
+            <td><code>IF OBSTACLE &lt;cmd&gt;</code></td>
+            <td>Executa &lt;cmd&gt; somente se houver obstáculo (ou borda) imediatamente à frente</td>
+            <td><code>IF OBSTACLE LEFT</code></td>
+          </tr>
+          <tr>
+            <td>Repetir</td>
+            <td><code>REPEAT n { … }</code></td>
+            <td>Executa o bloco <em>n</em> vezes; blocos podem ser aninhados</td>
+            <td><code>REPEAT 4 {</code><br><code>&nbsp;&nbsp;MOVE 1</code><br><code>}</code></td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -98,6 +116,10 @@ NUMERO    → [1-9][0-9]*</pre>
         <li><code>n</code> deve ser um inteiro <strong>positivo</strong> ≥ 1</li>
         <li>Linhas em branco são <strong>ignoradas</strong></li>
         <li>Comentários com <code>#</code> são <strong>ignorados</strong></li>
+        <li>Em <code>REPEAT n {</code>, o <code>{</code> deve estar na <strong>mesma linha</strong> que <code>REPEAT</code></li>
+        <li>O <code>}</code> de fechamento deve estar <strong>sozinho</strong> em sua linha</li>
+        <li>Blocos <code>REPEAT</code> podem ser <strong>aninhados</strong></li>
+        <li><code>IF OBSTACLE</code> avalia a célula <strong>imediatamente à frente</strong> no momento da execução</li>
       </ul>
     </div>
 
@@ -108,6 +130,7 @@ NUMERO    → [1-9][0-9]*</pre>
         <li>Se o rover atingir a <strong>borda do grid</strong>, o movimento é cancelado e registrado no log</li>
         <li>Se houver um <strong>obstáculo</strong> no caminho, o movimento para naquela célula</li>
         <li><code>SCAN</code> retorna se há obstáculo <em>imediatamente</em> à frente (1 célula)</li>
+        <li><code>IF OBSTACLE</code> considera <strong>bordas e obstáculos</strong> como bloqueio</li>
       </ul>
     </div>
 
@@ -139,6 +162,34 @@ MOVE 3
 RIGHT
 MOVE 1
 SCAN</pre>
+
+      <p class="text-muted-space mb-1 mt-3">Desvio com IF OBSTACLE</p>
+      <pre>MOVE 2
+IF OBSTACLE LEFT  # vira se há bloqueio à frente
+MOVE 3
+IF OBSTACLE RIGHT
+MOVE 2</pre>
+
+      <p class="text-muted-space mb-1 mt-3">Patrulha com REPEAT</p>
+      <pre>REPEAT 4 {
+  MOVE 2
+  RIGHT
+}</pre>
+
+      <p class="text-muted-space mb-1 mt-3">REPEAT aninhado</p>
+      <pre>REPEAT 3 {
+  REPEAT 2 {
+    MOVE 1
+    RIGHT
+  }
+  LEFT
+}</pre>
+
+      <p class="text-muted-space mb-1 mt-3">IF OBSTACLE dentro de REPEAT</p>
+      <pre>REPEAT 5 {
+  IF OBSTACLE LEFT
+  MOVE 1
+}</pre>
     </div>
 
     <!-- Erros -->
@@ -168,6 +219,31 @@ SCAN</pre>
             <td>Argumento indesejado</td>
             <td><code>LEFT 2</code></td>
             <td>LEFT não aceita argumentos</td>
+          </tr>
+          <tr>
+            <td>IF mal formado</td>
+            <td><code>IF LEFT</code></td>
+            <td>Sintaxe: IF OBSTACLE &lt;comando&gt;</td>
+          </tr>
+          <tr>
+            <td>Sub-comando inválido no IF</td>
+            <td><code>IF OBSTACLE FLY</code></td>
+            <td>Comando desconhecido após IF OBSTACLE: 'FLY'</td>
+          </tr>
+          <tr>
+            <td>REPEAT sem chave</td>
+            <td><code>REPEAT 3</code></td>
+            <td>REPEAT requer '{' na mesma linha: REPEAT n {</td>
+          </tr>
+          <tr>
+            <td>REPEAT sem fechamento</td>
+            <td><code>REPEAT 3 {</code> sem <code>}</code></td>
+            <td>REPEAT sem '}' de fechamento</td>
+          </tr>
+          <tr>
+            <td>Chave solta</td>
+            <td><code>}</code> sem REPEAT</td>
+            <td>'}' sem REPEAT correspondente</td>
           </tr>
           <tr>
             <td>Programa vazio</td>
