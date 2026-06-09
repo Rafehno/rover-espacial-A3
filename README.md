@@ -122,5 +122,5 @@ python main.py
 | Gabriel Fernandes | 172317728  |
 | João Brasil       | 172311360  |
 | Gabriel Klein     | 172312555  |
-| João Demech       | 172311321  |
+| João Demech       | 172611321  |
 | Breno da Silva    | 172416094  |
