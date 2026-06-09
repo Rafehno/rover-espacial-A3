@@ -12,7 +12,6 @@ let subStepsAll = [];
 let subStepIdx = 0;
 let animPaused = false;
 
-
 // ── p5.js sketch ──────────────────────────────────────────────────────────────
 const sketch = (p) => {
 
@@ -194,6 +193,7 @@ function resetSim() {
   subStepIdx = 0;
   animPaused = false;
   setAnimControls(false);
+  clearObstacles();
 
   const sx = parseInt(document.getElementById('start-x').value) || 0;
   const sy = parseInt(document.getElementById('start-y').value) || 0;
@@ -209,6 +209,22 @@ function resetSim() {
   addLog('Simulação reiniciada.', 'log-info');
   setStatus('Pronto', 'secondary');
   redrawCanvas();
+}
+
+function randomizeObstacles(count = 5) {
+  resetSim();
+  const w = parseInt(document.getElementById('grid-width').value) || 10;
+  const h = parseInt(document.getElementById('grid-height').value) || 10;
+  obstacles = [];
+
+  while (obstacles.length < Math.min(count, w * h - 1)) {
+    const col = Math.floor(Math.random() * w);
+    const row = Math.floor(Math.random() * h);
+    if (col === roverState.x && row === roverState.y) continue;
+    if (obstacles.some(o => o[0] === col && o[1] === row)) continue;
+    obstacles.push([col, row]);
+  }
+  p5instance.redraw();
 }
 
 
